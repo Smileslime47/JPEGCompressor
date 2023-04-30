@@ -23,11 +23,11 @@
 
 ## 展示
 ### 原图（knowledge.bmp）
-![](knowledge.bmp)
+![](./res/knowledge.bmp)
 ### 输出图（out.jpg）
-![](out.jpg)
+![](./res/out.jpg)
 ### 压缩比
-![](ratio.png)
+![](./res/ratio.png)
 
 ## 详述
 写完这个项目，感觉最难写的反而是熵编码部分，色彩空间转换、离散余弦变换、量化这三步在中文互联网上已经有足够详细的介绍了，也有现成的公式可以套用，但是分块（MCU）这一点很多资料都没有提及到，这直接关系到最后写入比特流时的编码顺序问题，而熵编码部分同样有大量细节没有阐述，这一步骤三种编码方式结合在一起而且压缩后的数据流过于抽象难以调试纠错。
@@ -46,8 +46,8 @@
 ## 黑历史
 一些在熵编码步骤遇到的各种神必输出图
 
-![](my-first-output.jpg)
+![](./res/my-first-output.jpg)
 
-![](first-half-success-output.jpg)
+![](./res/first-half-success-output.jpg)
 
-![](luminance.jpg)
+![](./res/luminance.jpg)
