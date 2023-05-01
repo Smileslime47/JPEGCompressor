@@ -140,7 +140,7 @@ $$G_{u,v}=\frac{1}{4}α(u)α(v)\sum^7_{x=0}\sum^7_{y=0}g_{x,y}cos[\frac{(2x+1)u\
 - $g_{x,y}$为坐标$(x,y)$处的数据值
 - $G_{u,v}$为坐标$(u,v)$处的DCT系数
 
-$$α(u)=\begin{cases}\frac{1}{\sqrt{2}}, & \text{if}\ u=0 \\1, & \text{otherwise}\end{cases}$$
+$$α(u)=\begin{cases}\frac{1}{\sqrt{2}}, & \text{if}\ u=0 \\ 1, & \text{otherwise}\end{cases}$$
 
 是一个使变换[正交](https://en.wikipedia.org/wiki/Orthonormality)的正规化系数
 
