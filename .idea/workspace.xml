@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a8f0c809-4866-4d50-a5fb-f9e449d223fb" name="变更" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/moe/_47saikyo/JpegCompressor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/moe/_47saikyo/JpegCompressor.java" afterDir="false" />
-    </list>
+    <list default="true" id="a8f0c809-4866-4d50-a5fb-f9e449d223fb" name="变更" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -85,7 +82,7 @@
       <workItem from="1682662044575" duration="27976000" />
       <workItem from="1682747381750" duration="35430000" />
       <workItem from="1682835866697" duration="9320000" />
-      <workItem from="1682922496977" duration="6854000" />
+      <workItem from="1682922496977" duration="7693000" />
     </task>
     <servers />
   </component>

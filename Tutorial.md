@@ -1,5 +1,10 @@
+#! https://zhuanlan.zhihu.com/p/626160823
 # JPEG编码过程详解
+关于本人JPEG编码器的项目已经上传至Github：https://github.com/Smileslime47/JPEGCompressor
+
 本文旨在对JPEG编码过程中的细节步骤进行说明，具体原理部分请参照Wikipedia
+
+部分图片素材源自：https://en.wikipedia.org/wiki/JPEG
 ## 色彩空间转换
 原始图像的像素点是以RGB形式存储的，即每个像素点由3个字节的数据组成，分别为Red通道、Green通道和Blue通道三个色度通道。JPEG很大一部分压缩算法是基于人眼对亮度和色度敏感性的差异而实现的，所以我们需要将RGB通道转换为一种叫做YCbCr的通道，即每个像素点由3个字节数据组成，分别为Y通道（亮度通道）、Cb通道（Blue）和Cr通道（Red），从而实现亮度数据的分离
 
@@ -119,6 +124,8 @@ for(y=0;y*MCULength+MCULength<=completionHeight;y++){
 ```
 
 ## 离散余弦变换
+![](https://wikimedia.org/api/rest_v1/media/math/render/svg/eed8c00e62db6618fd452d3905a03f842c30ce34)
+
 此时我们得到的YCbCr矩阵数据范围落在[0,255]，为了让后续DCT步骤的动态范围缩小，我们需要让数据范围变为以0为中心的[-128,127]，这样在DCT处理后数据才能尽可能以0为中心，在后续量化过程中获得更多的0，所以对于YUV矩阵我们需要将所有元素减去128来**归一化**
 ```Java
 private void symmetry(){
@@ -129,6 +136,8 @@ private void symmetry(){
     }
 }
 ```
+在归一化后我们得到了：
+![](https://wikimedia.org/api/rest_v1/media/math/render/svg/f69a5e277c8e5d58ea12abdf1b102668b9bb5bf1)
 
 **离散余弦变换**是将图像数据作为一种信号流来处理，对其进行类似于**快速傅里叶变换**的操作，将图像数据转换为若干个不同频率的余弦波的线性组合。在区块大小为$8\times8$的情况下，我们将其转换为64个余弦波的线性组合（其中包含一个频率为0的**直流分量**）
 
@@ -158,7 +167,10 @@ $$g_{x,y}=\sum^7_{x=0}\sum^7_{y=0}α(u)α(v)G_{u,v}cos[\frac{(2x+1)u\pi}{2N}]cos
 
 $$α(u)=\begin{cases}\frac{1}{\sqrt{N}}, & \text{if}\ u=0 \cr \frac{\sqrt{2}}{\sqrt{N}}, & \text{otherwise}\end{cases}$$
 
-要注意，当u和v同时取0，即DCT矩阵左上角的那个数值，其频率为0，我们称之为**DC系数或直流系数**，而剩下的63个值则叫做**AC系数或交流系数**
+在经过DCT处理后就可以得到DCT矩阵：
+![](https://wikimedia.org/api/rest_v1/media/math/render/svg/46ee57df2a309dd59e0a10c9ab83e8b86d712e3e)
+
+要注意，当u和v同时取0，即DCT矩阵左上角的那个数值，其频率为0，我们称之为**DC系数或直流系数**，而剩下的63个值则叫做**AC系数或交流系数**，观察可以发现DC系数远大于AC系数
 
 ```Java
     private final double    DCConstant_uv=((double)1/Math.sqrt(blockLength));
@@ -228,6 +240,9 @@ JPEG标准中已经给出了在50%压缩质量下对于亮度和色度的量化�
 |99|99|99|99|99|99|99|99|
 |99|99|99|99|99|99|99|99|
 |99|99|99|99|99|99|99|99|
+
+在上述DCT矩阵经过量化处理后我们就有了如下量化矩阵：
+![](https://wikimedia.org/api/rest_v1/media/math/render/svg/dfedb02fc67c95d021b46c13f4fb21c55a361671)
 
 ## 熵编码
 熵编码其实是JPEG压缩中最麻烦的一步，也很难讲清楚，它分为多个步骤
@@ -357,7 +372,22 @@ public static final int[] valDCchrominance = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
 
 我们先对**DC系数编码**
 
-由于DC系数没有前导0，部分1就是VLI编码的位深，我们记录下DC系数对应的VLI编码的位深，然后在霍夫曼表中找到对应的二进制表示，推入比特流，然后再将DC系数对应的VLI编码推入比特流即可
+DC系数有两个特殊现象：
+- DC系数本身数值较大
+- 相同通道的相邻DC系数差距较小
+
+所以我们对DC系数采用**差分编码**，每个DC系数的存储值被修改为该DC系数的实际值与上一个区块DC系数的实际值的差值。要注意的是，这个差分编码并不是面向区块的，而是面向通道的，也就是说每个色彩通道（Y、Cb、Cr）要独立计算。
+```Java
+if(type==component.Y)componentID=0;
+else if(type==component.Cb)componentID=1;
+else componentID=2;
+
+int tmp=zigzagArray[0];
+zigzagArray[0]-=lastDC[componentID];
+lastDC[componentID]=tmp;
+```
+
+由于DC系数没有前导0，部分1就是VLI编码的位深，我们记录下此时DC系数对应的VLI编码的位深，然后在霍夫曼表中找到对应的二进制表示，推入比特流，然后再将DC系数对应的VLI编码推入比特流即可
 
 ```Java
 //Huffman编码部分
