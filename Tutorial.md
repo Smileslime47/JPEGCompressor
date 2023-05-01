@@ -137,19 +137,25 @@ private void symmetry(){
 $$G_{u,v}=\frac{1}{4}α(u)α(v)\sum^7_{x=0}\sum^7_{y=0}g_{x,y}cos[\frac{(2x+1)u\pi}{16}]cos[\frac{(2y+1)v\pi}{16}]$$
 - u为水平空间频率，范围为$0\leq u<8$，实际上对应的就是DCT矩阵中的横坐标
 - v为垂直空间频率，范围为$0\leq u<8$，实际上对应的就是DCT矩阵中的纵坐标
-- $α(u)=\begin{cases}\frac{1}{\sqrt{2}}, & \text{if}\ u=0 \\1, & \text{otherwise}\end{cases}$是一个使变换[正交](https://en.wikipedia.org/wiki/Orthonormality)的正规化系数
 - $g_{x,y}$为坐标$(x,y)$处的数据值
 - $G_{u,v}$为坐标$(u,v)$处的DCT系数
+
+$$α(u)=\begin{cases}\frac{1}{\sqrt{2}}, & \text{if}\ u=0 \\1, & \text{otherwise}\end{cases}$$
+
+是一个使变换[正交](https://en.wikipedia.org/wiki/Orthonormality)的正规化系数
+
 
 这里我给出一个通用性更强的DCT-II公式，其中N为矩阵大小，自然地，我们取8：
 
 $$G_{u,v}=α(u)α(v)\sum^7_{x=0}\sum^7_{y=0}g_{x,y}cos[\frac{(2x+1)u\pi}{2N}]cos[\frac{(2y+1)v\pi}{2N}]$$
-- $α(u)=\begin{cases}\frac{1}{\sqrt{N}}, & \text{if}\ u=0 \\\frac{\sqrt{2}}{\sqrt{N}}, & \text{otherwise}\end{cases}$
+
+$$α(u)=\begin{cases}\frac{1}{\sqrt{N}}, & \text{if}\ u=0 \\\frac{\sqrt{2}}{\sqrt{N}}, & \text{otherwise}\end{cases}$$
 
 此外还有一个反变换的DCT-III公式，在解码时可以将DCT矩阵转换回YUV矩阵：
 
 $$g_{x,y}=\sum^7_{x=0}\sum^7_{y=0}α(u)α(v)G_{u,v}cos[\frac{(2x+1)u\pi}{2N}]cos[\frac{(2y+1)v\pi}{2N}]$$
-- $α(u)=\begin{cases}\frac{1}{\sqrt{N}}, & \text{if}\ u=0 \\\frac{\sqrt{2}}{\sqrt{N}}, & \text{otherwise}\end{cases}$
+
+$$α(u)=\begin{cases}\frac{1}{\sqrt{N}}, & \text{if}\ u=0 \\\frac{\sqrt{2}}{\sqrt{N}}, & \text{otherwise}\end{cases}$$
 
 要注意，当u和v同时取0，即DCT矩阵左上角的那个数值，其频率为0，我们称之为**DC系数或直流系数**，而剩下的63个值则叫做**AC系数或交流系数**
 
