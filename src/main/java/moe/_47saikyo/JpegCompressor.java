@@ -5,7 +5,7 @@ import java.io.*;
 
 /**
  * 一个Jpeg压缩编码器，也是我的数字图形处理结课作业，仅供学习用途
- * JPEG Compressor Copyright 2024 Smile_slime_47
+ * JPEG Compressor Copyright 2023 Smile_slime_47
  * @author Smile_slime_47
  * @version 1.0.0-alpha
  */
@@ -301,7 +301,7 @@ class JpegIOStream {
     public int imageHeight;
     public int imageWidth;
     private byte[] comment;
-    private final String defaultComment="JPEG Compressor Copyright 2024 Smile_slime_47";
+    private final String defaultComment="JPEG Compressor Copyright 2023 Smile_slime_47";
 
     public JpegIOStream(File input, OutputStream output) {
         try {
@@ -383,7 +383,7 @@ class JpegIOStream {
                 0x01,
                 //thumbnail分辨率
                 0x00,
-                0x00
+                0x000
         };
         writeArray(JFIFPayload);
 
@@ -645,7 +645,6 @@ class DCT{
                 DCTMatrix[v][u]= (float) (constant_2*constant_3);
             }
         }
-
         return DCTMatrix;
     }
 

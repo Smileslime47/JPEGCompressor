@@ -5,14 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a8f0c809-4866-4d50-a5fb-f9e449d223fb" name="变更" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/moe/_47saikyo/JpegCompressor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/moe/_47saikyo/JpegCompressor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/moe/_47saikyo/JpegCompressor.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -90,7 +84,8 @@
       <workItem from="1682593005060" duration="18341000" />
       <workItem from="1682662044575" duration="27976000" />
       <workItem from="1682747381750" duration="35430000" />
-      <workItem from="1682835866697" duration="8710000" />
+      <workItem from="1682835866697" duration="9320000" />
+      <workItem from="1682922496977" duration="6854000" />
     </task>
     <servers />
   </component>
@@ -117,7 +112,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/moe/_47saikyo/JpegCompressor.java</url>
-          <line>999</line>
+          <line>998</line>
           <option name="timeStamp" value="71" />
         </line-breakpoint>
       </breakpoints>
