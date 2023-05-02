@@ -2,7 +2,7 @@
  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ## 概述
 一个基本由自己实现的**JPEG有损图像压缩编码器**，基于JFIF（JPEG文件交换格式）标准：
-- 色彩空间转换（RGB 2 YUV）
+- 色彩空间转换（RGB to YUV）
 - 色度抽样（采样因子4:2:0）
 - MCU分块（16x16的最小编码单元，以Y1 Y2 Y3 Y4 U V的顺序写入比特流）
 - DCT离散余弦变换
