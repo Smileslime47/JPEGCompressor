@@ -2,6 +2,7 @@ package moe._47saikyo;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.util.List;
 
 /**
  * 一个Jpeg压缩编码器，也是我的数字图形处理结课作业，仅供学习用途
