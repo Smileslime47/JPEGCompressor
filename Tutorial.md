@@ -1,4 +1,3 @@
-#! https://zhuanlan.zhihu.com/p/626160823
 # JPEG编码过程详解
 关于本人JPEG编码器的项目已经上传至Github：https://github.com/Smileslime47/JPEGCompressor
 
@@ -593,7 +592,7 @@ SOS表示扫描开始，在读取完SOS段后紧接着就是熵编码的比特�
 
 和SOF段相同，通道ID+霍夫曼表ID是一组通道的数据，三个通道要各写一遍
 
-在写完SOF段后就可以推入熵编码的比特流了
+在写完SOS段后就可以推入熵编码的比特流了
 
 ### EOI
 **0xFFD9**：标志着图片数据的末尾
