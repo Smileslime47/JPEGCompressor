@@ -2,22 +2,16 @@ package moe._47saikyo;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.List;
 
 /**
  * 一个Jpeg压缩编码器，也是我的数字图形处理结课作业，仅供学习用途
  * JPEG Compressor Copyright 2023 Smile_slime_47
  * @author Smile_slime_47
- * @version 1.0.0-alpha
+ * @version 1.1.0-alpha
+ * 1.0.0- 首次上传，初步实现JPEG压缩算法
+ * 1.1.0- 优化代码结构，更新了单元测试模块
  */
 public class JpegCompressor {
-    //test
-    public static void main(String[] args) throws IOException {
-        JpegCompressor comp = new JpegCompressor(new FileInputStream("knowledge.bmp"),new FileOutputStream("out.jpg"));
-        comp.doCompress();
-        //io.debugWrite("C:\\Users\\smile\\Pictures\\testout0.bmp");
-    }
-
     private JpegIOStream            IO;
     private BufferedImage           image;
     private DCT                     dct;
@@ -26,7 +20,7 @@ public class JpegCompressor {
     private int                     imageWidth;
     private int                     completionWidth;
     private int                     completionHeight;
-    private int                     MCULength=16;
+    private final int               MCULength=16;
     private final int               blockLength=MCULength/2;
     //private final int               compLength=blockLength/2;
 
@@ -80,178 +74,117 @@ public class JpegCompressor {
     public void setComment(String comment){
         IO.setComment(comment);
     }
+    public void setOutput(OutputStream output){
+        IO.setOutput(output);
+        entropy.setOutput(IO.getOutput());
+    }
+    public void deBugWrite(String File){
+        IO.debugWrite(File);
+    }
 
 //  void WriteCompressedData(BufferedOutputStream outStream) throws IOException {
     private void WriteCompressedData() throws IOException {
-        float[] RGB;
-        float[] YCC = new float[0];
-        float[][][] YArray=new float[4][blockLength][blockLength];
-        float[][] UArray=new float[blockLength][blockLength];
-        float[][] VArray=new float[blockLength][blockLength];
+        float[][][] Array;
 
-        int[][][] DCTYArray=new int[4][blockLength][blockLength];
-        int[][] DCTUArray=new int[blockLength][blockLength];
-        int[][] DCTVArray=new int[blockLength][blockLength];
+        int[][][] DCTYArray = new int[4][][];
+        int[][] DCTUArray;
+        int[][] DCTVArray;
 
-        int i,x,y,xOffset,yOffset,r,c,MCU_r_offset,MCU_c_offset;
+        int i,x,y;
         //分块序号，x和y标记当前行/列的第几个MCU
         for(y=0;y*MCULength+MCULength<=completionHeight;y++){
             for (x=0;x*MCULength+MCULength<=completionWidth;x++){
 
-                //生成Y U V矩阵
-                for (i=0;i<4;i++){
-                    //x/yOffset用去获取当前像素点在图像中的绝对位置
-                    xOffset=x*MCULength;
-                    yOffset=y*MCULength;
-                    //r/cOffset用于获取当前像素点在MCU中的相对位置
-                    MCU_r_offset=0;
-                    MCU_c_offset=0;
-                    if(i==1||i==3){
-                        xOffset+=blockLength;
-                        MCU_c_offset+=blockLength;
-                    }
-                    if(i==2||i==3){
-                        yOffset+=blockLength;
-                        MCU_r_offset+=blockLength;
-                    }
-                    for (r=0;r<blockLength;r++){
-                        for (c=0;c<blockLength;c++){
-
-                            if(xOffset+c>=imageWidth||yOffset+r>=imageHeight){
-                                //边缘色度填充，防止出现振铃效应
-                                RGB=getRGB(xOffset+c>=imageWidth?imageWidth-1:xOffset+c,yOffset+r>=imageHeight?imageHeight-1:yOffset+r);
-                            }else{
-                                RGB=getRGB(xOffset+c,yOffset+r);
-                            }
-
-                            YCC=RgbToYccHandler.get(RGB);
-//                            //色度图
-//                            YCC[0]=128;
-//                            //灰度图
-//                            YCC[1]=128;
-//                            YCC[2]=128;
-                            YArray[i][r][c]=YCC[0];
-
-                            //downSampling 色度抽样，偶数行采样U，奇数行采样V，压缩的第一步，将每4个像素共12组数据压缩为6组
-                            if((r+MCU_r_offset)%2==0&&(c+MCU_c_offset)%2==0){
-                                UArray[(r+MCU_r_offset)/2][(c+MCU_c_offset)/2]=YCC[1];
-                            }
-                            else if((r+MCU_r_offset)%2==1&&(c+MCU_c_offset)%2==0){
-                                VArray[(r+MCU_r_offset)/2][(c+MCU_c_offset)/2]=YCC[2];
-                            }
-                        }
-                    }
-                }
-
-//                //色度抽样输出测试
-//                for (i=0;i<4;i++){
-//                    //根据序号获取块的起始偏移值
-//                    xOffset=x*MCULength;
-//                    yOffset=y*MCULength;
-//                    MCU_r_offset=0;
-//                    MCU_c_offset=0;
-//                    if(i==1||i==3){
-//                        xOffset+=blockLength;
-//                        MCU_c_offset+=blockLength;
-//                    }
-//                    if(i==2||i==3){
-//                        yOffset+=blockLength;
-//                        MCU_r_offset+=blockLength;
-//                    }
-//                    for (r=0;r<blockLength;r++){
-//                        for (c=0;c<blockLength;c++){
-//                            if(xOffset+c>=imageWidth||yOffset+r>=imageHeight){
-//                                continue;
-//                            }
-//                            YCC[0]=YArray[i][r][c];
-//                            YCC[1]=UArray[(r+MCU_r_offset)/2][(c+MCU_c_offset)/2];
-//                            YCC[2]=VArray[(r+MCU_r_offset)/2][(c+MCU_c_offset)/2];
-//                            RGB=YccToRgbHandler.get(YCC);
-//                            setRGB(xOffset+c,yOffset+r,RGB);
-//                        }
-//                    }
-//                }
-
+                //Y1 Y2 Y3 Y4 Cb Cr
+                Array=getMCUBlock(x,y);
 
                 //DCT转换
                 for (i=0;i<4;i++){
-                    dct.initMatrix(YArray[i]);
-                    dct.forwardDCT();
-                    DCTYArray[i]=dct.quantize(DCT.component.luminance);
+                    DCTYArray[i]=DCTComp_L(Array[i]);
                 }
-                dct.initMatrix(UArray);
-                dct.forwardDCT();
-                DCTUArray=dct.quantize(DCT.component.chrominance);
-                dct.initMatrix(VArray);
-                dct.forwardDCT();
-                DCTVArray=dct.quantize(DCT.component.chrominance);
-
-//                //DCT输出测试
-//                if(x==20&&y==20){
-//                    for(int i=0;i<compLength;i++){
-//                        for (int j=0;j<compLength;j++){
-//                            System.out.print(DCTUArray[i][j]+"\t\t");
-//                        }
-//                        System.out.println();
-//                    }
-//                }
-
-//                //量化输出测试
-//                for (i=0;i<4;i++){
-//                    dct.initMatrix(DCTYArray[i]);
-//                    dct.reverseQuantize(DCT.component.luminance);
-//                    YArray[i]=dct.reverseDCT();
-//                }
-//                dct.initMatrix(DCTUArray);
-//                dct.reverseQuantize(DCT.component.chrominance);
-//                UArray=dct.reverseDCT();
-//                dct.initMatrix(DCTVArray);
-//                dct.reverseQuantize(DCT.component.chrominance);
-//                VArray=dct.reverseDCT();
-//                for (i=0;i<4;i++){
-//                    //根据序号获取块的起始偏移值
-//                    xOffset=x*MCULength;
-//                    yOffset=y*MCULength;
-//                    MCU_r_offset=0;
-//                    MCU_c_offset=0;
-//                    if(i==1||i==3){
-//                        xOffset+=blockLength;
-//                        MCU_c_offset+=blockLength;
-//                    }
-//                    if(i==2||i==3){
-//                        yOffset+=blockLength;
-//                        MCU_r_offset+=blockLength;
-//                    }
-//                    for (r=0;r<blockLength;r++){
-//                        for (c=0;c<blockLength;c++){
-//                            if(xOffset+c>=imageWidth||yOffset+r>=imageHeight){
-//                                continue;
-//                            }
-//                            YCC[0]=YArray[i][r][c];
-//                            YCC[1]=UArray[(r+MCU_r_offset)/2][(c+MCU_c_offset)/2];
-//                            YCC[2]=VArray[(r+MCU_r_offset)/2][(c+MCU_c_offset)/2];
-//                            RGB=YccToRgbHandler.get(YCC);
-//                            setRGB(xOffset+c,yOffset+r,RGB);
-//                        }
-//                    }
-//                }
+                DCTUArray=DCTComp_C(Array[4]);
+                DCTVArray=DCTComp_C(Array[5]);
 
                 //熵编码
                 for (i=0;i<4;i++){
-                    entropy.initMatrix(DCTYArray[i]);
-                    entropy.writeHuffmanBits(EntropyEncoder.component.Y);
+                    entropyComp(DCTYArray[i], EntropyEncoder.component.Y);
                 }
+                entropyComp(DCTUArray, EntropyEncoder.component.Cb);
+                entropyComp(DCTVArray, EntropyEncoder.component.Cr);
 
-                entropy.initMatrix(DCTUArray);
-                entropy.writeHuffmanBits(EntropyEncoder.component.Cb);
-
-                entropy.initMatrix(DCTVArray);
-                entropy.writeHuffmanBits(EntropyEncoder.component.Cr);
             }
         }
         entropy.flushByte();
     }
 
+    //MCU分块
+    private float[][][] getMCUBlock(int x,int y){
+        float[] RGB;
+        float[] YCC;
+        float[][][] Array=new float[6][blockLength][blockLength];
+        int i,xOffset,yOffset,r,c,MCU_r_offset,MCU_c_offset;
+        //生成Y U V矩阵
+        for (i=0;i<4;i++){
+            //x/yOffset用去获取当前像素点在图像中的绝对位置
+            xOffset=x*MCULength;
+            yOffset=y*MCULength;
+            //r/cOffset用于获取当前像素点在MCU中的相对位置
+            MCU_r_offset=0;
+            MCU_c_offset=0;
+            if(i==1||i==3){
+                xOffset+=blockLength;
+                MCU_c_offset+=blockLength;
+            }
+            if(i==2||i==3){
+                yOffset+=blockLength;
+                MCU_r_offset+=blockLength;
+            }
+            for (r=0;r<blockLength;r++){
+                for (c=0;c<blockLength;c++){
+
+                    if(xOffset+c>=imageWidth||yOffset+r>=imageHeight){
+                        //边缘色度填充，防止出现振铃效应
+                        RGB=getRGB(xOffset+c>=imageWidth?imageWidth-1:xOffset+c,yOffset+r>=imageHeight?imageHeight-1:yOffset+r);
+                    }else{
+                        RGB=getRGB(xOffset+c,yOffset+r);
+                    }
+
+                    YCC=RgbToYccHandler.get(RGB);
+                    Array[i][r][c]=YCC[0];
+
+                    //downSampling 色度抽样，偶数行采样U，奇数行采样V，压缩的第一步，将每4个像素共12组数据压缩为6组
+                    if((r+MCU_r_offset)%2==0&&(c+MCU_c_offset)%2==0){
+                        Array[4][(r+MCU_r_offset)/2][(c+MCU_c_offset)/2]=YCC[1];
+                    }
+                    else if((r+MCU_r_offset)%2==1&&(c+MCU_c_offset)%2==0){
+                        Array[5][(r+MCU_r_offset)/2][(c+MCU_c_offset)/2]=YCC[2];
+                    }
+                }
+            }
+        }
+        return Array;
+    }
+    //DCT及量化
+    private int[][] DCTComp(float[][] matrix,DCT.component component){
+        dct.initMatrix(matrix);
+        dct.forwardDCT();
+        return dct.quantize(component);
+    }
+    private float[][] IDCTComp(int[][] matrix,DCT.component component){
+        dct.initMatrix(matrix);
+        dct.reverseQuantize(component);
+        return dct.reverseDCT();
+    }
+    private int[][] DCTComp_L(float[][] matrix){return DCTComp(matrix,DCT.component.luminance);}
+    private int[][] DCTComp_C(float[][] matrix){return DCTComp(matrix,DCT.component.chrominance);}
+    private float[][] IDCT_L(int[][] matrix){return IDCTComp(matrix,DCT.component.luminance);}
+    private float[][] IDCT_C(int[][] matrix){return IDCTComp(matrix,DCT.component.chrominance);}
+
+    //熵编码
+    private void entropyComp(int[][] matrix, EntropyEncoder.component component) throws IOException {
+        entropy.initMatrix(matrix);
+        entropy.writeHuffmanBits(component);
+    }
 
     /*
      * 获取和写入RGB色彩通道
@@ -304,6 +237,7 @@ class JpegIOStream {
     private byte[] comment;
     private final String defaultComment="JPEG Compressor Copyright 2023 Smile_slime_47";
 
+
     public JpegIOStream(File input, OutputStream output) {
         try {
             bufferedImage = ImageIO.read(input);
@@ -312,7 +246,7 @@ class JpegIOStream {
         this.imageWidth = bufferedImage.getWidth();
         this.imageHeight = bufferedImage.getHeight();
         comment=defaultComment.getBytes();
-        bufferedOutput=new BufferedOutputStream(output);
+        bufferedOutput=output!=null?new BufferedOutputStream(output):null;
     }
     public JpegIOStream(InputStream input, OutputStream output) {
         try {
@@ -322,9 +256,12 @@ class JpegIOStream {
         this.imageWidth = bufferedImage.getWidth();
         this.imageHeight = bufferedImage.getHeight();
         comment=defaultComment.getBytes();
-        bufferedOutput=new BufferedOutputStream(output);
+        bufferedOutput=output!=null?new BufferedOutputStream(output):null;
     }
 
+    public void setOutput(OutputStream output){
+        bufferedOutput=new BufferedOutputStream(output);
+    }
     public BufferedOutputStream getOutput(){return bufferedOutput;}
     public BufferedImage getImage() {
         return bufferedImage;
@@ -340,6 +277,7 @@ class JpegIOStream {
     public void setComment(String com){
         comment=com.getBytes();
     }
+    //写标志位
     private void writeMarker(byte marker) throws IOException {
         bufferedOutput.write(JPEGHeader.marker);
         bufferedOutput.write(marker);
@@ -790,6 +728,10 @@ class EntropyEncoder{
         matrix=new int[blockLength][blockLength];
         zigzagArray=new int[blockLength*blockLength];
         initHuf();
+    }
+
+    public void setOutput(BufferedOutputStream output){
+        this.output=output;
     }
 
     //实在是懒得写范式Huffman构成了，直接搬源码了

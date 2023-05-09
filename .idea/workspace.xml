@@ -4,11 +4,25 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6a9f94e7-e3a0-438b-a0bf-de39851e8f92" name="更改" comment="" />
+    <list default="true" id="6a9f94e7-e3a0-438b-a0bf-de39851e8f92" name="更改" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/moe/_47saikyo/test/JpegCompressorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/res/chrominance.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/res/out.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/res/out.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/moe/_47saikyo/JpegCompressor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/moe/_47saikyo/JpegCompressor.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -28,15 +42,113 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "C:/Users/smile/IdeaProjects/JPEGCompressor",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/smile/IdeaProjects/JPEGCompressor&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;模块&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
+  <component name="RunManager" selected="JUnit.JpegCompressorTest.chrominanceTest">
+    <configuration name="JpegCompressorTest.DCTTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="JPEGCompressor" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="moe._47saikyo.test.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="moe._47saikyo.test" />
+      <option name="MAIN_CLASS_NAME" value="moe._47saikyo.test.JpegCompressorTest" />
+      <option name="METHOD_NAME" value="DCTTest" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="JpegCompressorTest.allFunctionTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="JPEGCompressor" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="moe._47saikyo.test.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="moe._47saikyo.test" />
+      <option name="MAIN_CLASS_NAME" value="moe._47saikyo.test.JpegCompressorTest" />
+      <option name="METHOD_NAME" value="allFunctionTest" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="JpegCompressorTest.chrominanceTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="JPEGCompressor" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="moe._47saikyo.test.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="moe._47saikyo.test" />
+      <option name="MAIN_CLASS_NAME" value="moe._47saikyo.test.JpegCompressorTest" />
+      <option name="METHOD_NAME" value="chrominanceTest" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="JpegCompressorTest.downSamplingTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="JPEGCompressor" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="moe._47saikyo.test.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="moe._47saikyo.test" />
+      <option name="MAIN_CLASS_NAME" value="moe._47saikyo.test.JpegCompressorTest" />
+      <option name="METHOD_NAME" value="downSamplingTest" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="JpegCompressorTest.luminanceTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="JPEGCompressor" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="moe._47saikyo.test.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="moe._47saikyo.test" />
+      <option name="MAIN_CLASS_NAME" value="moe._47saikyo.test.JpegCompressorTest" />
+      <option name="METHOD_NAME" value="luminanceTest" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JUnit.JpegCompressorTest.chrominanceTest" />
+        <item itemvalue="JUnit.JpegCompressorTest.luminanceTest" />
+        <item itemvalue="JUnit.JpegCompressorTest.DCTTest" />
+        <item itemvalue="JUnit.JpegCompressorTest.downSamplingTest" />
+        <item itemvalue="JUnit.JpegCompressorTest.allFunctionTest" />
+      </list>
+    </recent_temporary>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="应用程序级" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="默认任务">
@@ -46,10 +158,46 @@
       <option name="presentableId" value="Default" />
       <updated>1683020045163</updated>
       <workItem from="1683020046195" duration="44000" />
+      <workItem from="1683626035120" duration="6863000" />
+      <workItem from="1683641440414" duration="63000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/moe/_47saikyo/JpegCompressor.java</url>
+          <line>1017</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/moe/_47saikyo/test/JpegCompressorTest.java</url>
+          <line>84</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-method">
+          <url>file://$PROJECT_DIR$/src/main/java/moe/_47saikyo/test/JpegCompressorTest.java</url>
+          <line>47</line>
+          <properties class="moe._47saikyo.test.JpegCompressorTest" method="downSamplingTest">
+            <option name="EMULATED" value="true" />
+            <option name="WATCH_EXIT" value="false" />
+          </properties>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-method">
+          <url>file://$PROJECT_DIR$/src/main/java/moe/_47saikyo/test/JpegCompressorTest.java</url>
+          <line>64</line>
+          <properties class="moe._47saikyo.test.JpegCompressorTest" method="DCTTest">
+            <option name="EMULATED" value="true" />
+            <option name="WATCH_EXIT" value="false" />
+          </properties>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
