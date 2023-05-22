@@ -22,7 +22,7 @@ public class JpegCompressorTest {
 
     @Before
     public void initTest() throws FileNotFoundException, NoSuchFieldException, IllegalAccessException {
-        comp = new JpegCompressor(new FileInputStream("res/knowledge.bmp"), null);
+        comp = new JpegCompressor(new FileInputStream("res/肖像.png"), null);
 
         Field iH = JpegCompressor.class.getDeclaredField("imageHeight");
         iH.setAccessible(true);
@@ -40,7 +40,7 @@ public class JpegCompressorTest {
 
     @Test
     public void allFunctionTest() throws IOException {
-        comp.setOutput(new FileOutputStream("res/out.jpg"));
+        comp.setOutput(new FileOutputStream("res/out1.jpg"));
         comp.doCompress();
     }
 

@@ -4,36 +4,42 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 
 /**
- * 一个Jpeg压缩编码器，也是我的数字图形处理结课作业，仅供学习用途
+ * 一个Jpeg压缩编码器，也是我的数字图形处理结课作业，仅供学习用途<br/>
  * JPEG Compressor Copyright 2023 Smile_slime_47
- * @author Smile_slime_47
- * @version 1.1.0-alpha
- * 1.0.0- 首次上传，初步实现JPEG压缩算法
- * 1.1.0- 优化代码结构，更新了单元测试模块
+ * @author Smile_slime_47<br/>
+ * @version 1.0.0- 首次上传，初步实现JPEG压缩算法<br/>
+ * 1.1.0- 优化代码结构，更新了单元测试模块<br/>
+ * 1.2.0- 补全了各方法的注释
  */
 public class JpegCompressor {
-    private JpegIOStream            IO;
-    private BufferedImage           image;
-    private DCT                     dct;
-    private EntropyEncoder          entropy;
-    private int                     imageHeight;
-    private int                     imageWidth;
-    private int                     completionWidth;
-    private int                     completionHeight;
-    private final int               MCULength=16;
-    private final int               blockLength=MCULength/2;
+    private JpegIOStream            IO;                         //自定义的IO成员
+    private BufferedImage           image;                      //读入的图像
+    private DCT                     dct;                        //DCT处理器
+    private EntropyEncoder          entropy;                    //熵编码处理器
+    private int                     imageHeight;                //图像实际高度
+    private int                     imageWidth;                 //图像实际宽度
+    private int                     completionWidth;            //图像补全宽度（补全至16的倍数）
+    private int                     completionHeight;           //图像补全高度
+    private final int               MCULength=16;               //最小编码单元尺寸
+    private final int               blockLength=MCULength/2;    //块尺寸
     //private final int               compLength=blockLength/2;
 
     public  ColorComponentHandler   RgbToYccHandler;
     public  ColorComponentHandler   YccToRgbHandler;
 
-    /*
+    /**
      * 我给它起名为通道转换器（ColorComponentHandler），用于将一个float格式的色彩通道数组转换成另一种格式
      */
     interface ColorComponentHandler {
         float[] get(float[] components);
     }
 
+    /**
+     * 默认的构造器参数，可以通过{@code inputStream}和{@code outputStream}初始化编码器<br/>
+     * 这里为了方便IO，自定义了一个IO类{@link #IO}
+     * @param input 获取编码器的inputStream
+     * @param output 获取编码器的outputStream
+     */
     public JpegCompressor(InputStream input,OutputStream output){
         IO=new JpegIOStream(input,output);
         initJpegCompressor();
@@ -42,6 +48,14 @@ public class JpegCompressor {
         IO=io;
         initJpegCompressor();
     }
+
+    /**
+     *图片的初始化，包括：<br/>
+     *1.读取图片<br/>
+     *2.获取图片的高度和宽度，并计算补全尺寸<br/>
+     *3.初始化DCT处理类和熵编码处理类<br/>
+     *4.根据公式定义RGB到YCbCr的转换公式<br/>
+     */
     private void initJpegCompressor(){
         image = IO.getImage();
         imageWidth = IO.imageWidth;
@@ -66,23 +80,56 @@ public class JpegCompressor {
                 (float) (YUV[0] + 1.772 * (YUV[1] - 128))
         };
     }
+
+    /**
+     *压缩的全步骤调用，包括：<br/>
+     *1.写文件头<br/>
+     *2.压缩文件并写入数据流<br/>
+     *3.写文件尾<br/>
+     */
     public void doCompress() throws IOException {
         IO.writeHeader();
         WriteCompressedData();
         IO.writeEOI();
     }
+
+    /**
+     * 设置图片注释，该部分会被包含在JPEG成图的文件头中
+     * @param comment 图片注释内容
+     */
     public void setComment(String comment){
         IO.setComment(comment);
     }
+
+    /**
+     * 修改编码器的outputStream，适用于初始化时构造器的output参数传入null，等待压缩之前传入的情况
+     * @param output 编码器修改后的outputStream
+     */
     public void setOutput(OutputStream output){
         IO.setOutput(output);
         entropy.setOutput(IO.getOutput());
     }
+
+    /**
+     * 测试输出，该方法会将图像的当前状态以BMP格式输出，用于调试熵编码之前的压缩过程
+     * @param File BMP图片的输出路径
+     */
     public void deBugWrite(String File){
         IO.debugWrite(File);
     }
 
 //  void WriteCompressedData(BufferedOutputStream outStream) throws IOException {
+
+    /**
+     * 压缩的具体过程，包括：<br/>
+     * 1.获取MCU编号（x和y序号）<br/>
+     * 2.根据x和y序号获取到MCU的具体偏移值<br/>
+     * 3.通过{@link #getMCUBlock(int, int)}对16x16的MCU进行色彩空间转换和色度抽样<br/>
+     * 4.通过{@link #DCTComp(float[][], DCT.component)}将转换后的数据矩阵进行DCT和量化处理<br/>
+     * 5.通过{@link #entropyComp(int[][], EntropyEncoder.component)}对量化矩阵进行熵编码，包括Zigzag扫描、游程编码、哈夫曼编码、VLI编码<br/>
+     * 6.将熵编码数据写入文件输出流中<br/>
+     * @throws IOException IO异常
+     */
     private void WriteCompressedData() throws IOException {
         float[][][] Array;
 
@@ -117,7 +164,12 @@ public class JpegCompressor {
         entropy.flushByte();
     }
 
-    //MCU分块
+    /**
+     * MCU分块，获取对应x和y序号位置的16x16矩阵，并将其进行色彩空间转换和色度抽样，返回处理完毕的6组矩阵，这里的色度矩阵已经经过色度抽样处理，故仍为8x8矩阵
+     * @param x MCU所在的x序号
+     * @param y MCU所在的y序号
+     * @return 6组8x8的float矩阵，分别为左上灰度(Y1)、右上灰度(Y2)、左下灰度(Y3)、右下灰度(Y4)、色度B(Cb)、色度R矩阵(Cr)
+     */
     private float[][][] getMCUBlock(int x,int y){
         float[] RGB;
         float[] YCC;
@@ -164,31 +216,75 @@ public class JpegCompressor {
         }
         return Array;
     }
-    //DCT及量化
+
+    /**
+     * 调用DCT处理及量化
+     * @param matrix 一组8x8的block，为YUV色彩通道数据
+     * @param component 该矩阵所属的色彩通道，有luminance和chrominance
+     * @return 返回经过量化处理的量化矩阵
+     */
     private int[][] DCTComp(float[][] matrix,DCT.component component){
         dct.initMatrix(matrix);
         dct.forwardDCT();
         return dct.quantize(component);
     }
+
+    /**
+     * 对量化矩阵进行逆变换，重新得到YCbCr矩阵，用于调试输出
+     * @param matrix 一组8x8的block，为一个经过处理的量化矩阵
+     * @param component 该矩阵所属的色彩通道，有luminance和chrominance
+     * @return 返回经过逆变换的YUV矩阵
+     */
     private float[][] IDCTComp(int[][] matrix,DCT.component component){
         dct.initMatrix(matrix);
         dct.reverseQuantize(component);
         return dct.reverseDCT();
     }
+
+    /**
+     * 对一个灰度矩阵进行DCT变换
+     * @param matrix 8x8的灰度矩阵
+     * @return 经过处理的量化矩阵
+     */
     private int[][] DCTComp_L(float[][] matrix){return DCTComp(matrix,DCT.component.luminance);}
+
+    /**
+     * 对一个色度矩阵进行DCT变换
+     * @param matrix 8x8的色度矩阵
+     * @return 经过处理的量化矩阵
+     */
     private int[][] DCTComp_C(float[][] matrix){return DCTComp(matrix,DCT.component.chrominance);}
+
+    /**
+     * 对一个被量化的灰度矩阵进行逆变换
+     * @param matrix 8x8的灰度量化矩阵
+     * @return 逆变换后的灰度矩阵
+     */
     private float[][] IDCT_L(int[][] matrix){return IDCTComp(matrix,DCT.component.luminance);}
+
+    /**
+     * 对一个被量化的色度矩阵进行逆变换
+     * @param matrix 8x8的色度量化矩阵
+     * @return 逆变换后的色度矩阵
+     */
     private float[][] IDCT_C(int[][] matrix){return IDCTComp(matrix,DCT.component.chrominance);}
 
-    //熵编码
+    /**
+     * 调用熵编码，并直接写入输出流
+     * @param matrix 一组8x8的量化矩阵
+     * @param component 该矩阵所属的色彩通道，有luminance和chrominance
+     * @throws IOException IO异常
+     */
     private void entropyComp(int[][] matrix, EntropyEncoder.component component) throws IOException {
         entropy.initMatrix(matrix);
         entropy.writeHuffmanBits(component);
     }
 
-    /*
-     * 获取和写入RGB色彩通道
-     * 写入方法主要是用作调试
+    /**
+     * 通过{@link ImageIO}的getRGB获取3byte的RGB值，并通过位运算获取到R、G、B三个色彩通道的值
+     * @param x 像素点的x坐标
+     * @param y 像素点的y坐标
+     * @return 一个大小为3的float数组，分别存储了R、G、B的数据
      */
     private float[] getRGB(int x, int y) {
         if (x >= imageWidth) {
@@ -204,6 +300,13 @@ public class JpegCompressor {
         int b = (value & 0xff);
         return new float[]{r, g, b};
     }
+
+    /**
+     * 通过{@link ImageIO}的setRGB写回RGB的值，这一步是为了中途调试，在实际压缩过程中并不会用到
+     * @param x 像素点的x坐标
+     * @param y 像素点的y坐标
+     * @param RGBComponent 一个大小为3的float数组，分别存储了R、G、B的数据
+     */
     private void setRGB(int x, int y,float[] RGBComponent){
         //YCC转回RGB时有可能会超出[0,255]，需要判断一下，血的教训（
         for (int i=0;i<3;i++){
@@ -215,7 +318,9 @@ public class JpegCompressor {
     }
 }
 
-//文件头标记位表
+/**
+ * JPEG文件头标记位表
+ */
 class JPEGHeader {
     public static final byte    marker  = (byte) 0xFF;
     public static final byte    SOI     = (byte) 0xD8;
@@ -229,6 +334,7 @@ class JPEGHeader {
     public static final byte    COM     = (byte) 0xFE;
     public static final byte    EOI     = (byte) 0xD9;
 }
+
 class JpegIOStream {
     private BufferedImage bufferedImage;
     private BufferedOutputStream bufferedOutput;
@@ -238,6 +344,11 @@ class JpegIOStream {
     private final String defaultComment="JPEG Compressor Copyright 2023 Smile_slime_47";
 
 
+    /**
+     * 初始化JPEG IO类
+     * @param input 图像的路径
+     * @param output IO的输出流
+     */
     public JpegIOStream(File input, OutputStream output) {
         try {
             bufferedImage = ImageIO.read(input);
@@ -248,6 +359,11 @@ class JpegIOStream {
         comment=defaultComment.getBytes();
         bufferedOutput=output!=null?new BufferedOutputStream(output):null;
     }
+    /**
+     * 初始化JPEG IO类
+     * @param input IO的输入流
+     * @param output IO的输出流
+     */
     public JpegIOStream(InputStream input, OutputStream output) {
         try {
             bufferedImage = ImageIO.read(input);
@@ -259,14 +375,30 @@ class JpegIOStream {
         bufferedOutput=output!=null?new BufferedOutputStream(output):null;
     }
 
+    /**
+     * 设置IO类的输出流，适用于构造参数传入了null的情况
+     * @param output IO的输出流
+     */
     public void setOutput(OutputStream output){
         bufferedOutput=new BufferedOutputStream(output);
     }
-    public BufferedOutputStream getOutput(){return bufferedOutput;}
-    public BufferedImage getImage() {
-        return bufferedImage;
-    }
 
+    /**
+     * 获取IO的输出流
+     * @return IO的输出流
+     */
+    public BufferedOutputStream getOutput(){return bufferedOutput;}
+
+    /**
+     * 获取IO读入的图像
+     * @return 读入图像的bufferedImage类
+     */
+    public BufferedImage getImage() {return bufferedImage;}
+
+    /**
+     * 调试输出，输出对应路径下的BMP文件
+     * @param File 输出图片路径
+     */
     public void debugWrite(String File) {
         try {
             ImageIO.write(bufferedImage, "bmp", new File(File));
@@ -274,24 +406,55 @@ class JpegIOStream {
         }
     }
 
+    /**
+     * 设置图片注释，该注释会被写入JPEG图片的文件头中
+     * @param com 注释内容
+     */
     public void setComment(String com){
         comment=com.getBytes();
     }
-    //写标志位
+
+    /**
+     * 写标志位
+     * @param marker 标志位的码，可以直接调用JPEG Header类
+     * @throws IOException IO异常
+     */
     private void writeMarker(byte marker) throws IOException {
         bufferedOutput.write(JPEGHeader.marker);
         bufferedOutput.write(marker);
     }
+
+    /**
+     * 向输出流中写入一个byte的数据
+     * @param data 一字节数据
+     * @throws IOException IO异常
+     */
     private void writeByte(byte data) throws IOException {
         bufferedOutput.write(data);
     }
+
+    /**
+     * 向输出流中写入一个byte数组的数据
+     * @param dataArr 一组字节数据
+     * @throws IOException IO异常
+     */
     private void writeArray(byte[] dataArr) throws IOException {
         bufferedOutput.write(dataArr);
     }
+
+    /**
+     * 向输出流中写入EOI标志位，象征编码过程的结束
+     * @throws IOException IO异常
+     */
     public void writeEOI() throws IOException {
         writeMarker(JPEGHeader.EOI);
         bufferedOutput.flush();
     }
+
+    /**
+     * 向输出流中写入JPEG文件头，象征编码过程的开始
+     * @throws IOException IO异常
+     */
     public void writeHeader() throws IOException {
         int[] zigzagDQT;
         int[] bitsDHT,valDHT;
@@ -481,16 +644,19 @@ class JpegIOStream {
     }
 }
 
+/**
+ * 离散余弦变换及量化类
+ */
 class DCT{
-    private float[][]       matrix;
-    private float[][]       DCTMatrix;
-    private int[][]         quantumMatrix;
-    private final int       blockLength=8;
-    private final double    DCConstant_uv=((double)1/Math.sqrt(blockLength));
-    private final double    ACConstant_uv=(Math.sqrt(2)/Math.sqrt(blockLength));
-    public  enum            component{luminance, chrominance};
+    private float[][]       matrix;                                             //YUV矩阵
+    private float[][]       DCTMatrix;                                          //DCT处理后的频域矩阵
+    private int[][]         quantumMatrix;                                      //量化矩阵
+    private final int       blockLength=8;                                      //块大小
+    private final double    DCConstant_uv=((double)1/Math.sqrt(blockLength));   //DC的公式系数
+    private final double    ACConstant_uv=(Math.sqrt(2)/Math.sqrt(blockLength));//AC的公式系数
+    public  enum            component{luminance, chrominance};                  //通道
 
-    //JPEG标准提供的灰度/色度量化表
+    //JPEG标准提供的灰度量化表
     public static final int[][]   quantum_luminance={
             {16,11,10,16,24,40,51,61},
             {12,12,14,19,26,58,60,55},
@@ -501,6 +667,7 @@ class DCT{
             {49,64,78,87,103,121,120,101},
             {72,92,95,98,112,100,103,99}
     };
+    //JPEG标准提供的色度量化表
     public static final int[][]   quantum_chrominance={
             {17,18,24,47,99,99,99,99},
             {18,21,26,66,99,99,99,99},
@@ -512,6 +679,10 @@ class DCT{
             {99,99,99,99,99,99,99,99}
     };
 
+    /**
+     * 初始化矩阵，当传入float矩阵时将其认为YUV矩阵并准备正变换
+     * @param matrix YCbCr的某个8x8的通道矩阵
+     */
     public void initMatrix(float[][] matrix){
         if(matrix.length==blockLength){
             this.matrix=new float[blockLength][blockLength];
@@ -528,6 +699,10 @@ class DCT{
         }
     }
 
+    /**
+     * 初始化矩阵，当传入int矩阵时将其认为量化矩阵并准备逆变换
+     * @param matrix 量化矩阵
+     */
     public void initMatrix(int[][] matrix){
         if(matrix.length==blockLength){
             this.matrix=new float[blockLength][blockLength];
@@ -542,7 +717,9 @@ class DCT{
         }
     }
 
-    //在通道转换后得到的Y矩阵数据范围在0~255，DCT需要定义域对称，将数据左移128，使其范围落在-128~127
+    /**
+     * 在通道转换后得到的Y矩阵数据范围在0~255，DCT需要定义域对称，将数据左移128，使其范围落在-128~127
+     */
     private void symmetry(){
         for(int r=0;r<blockLength;r++){
             for(int c=0;c<blockLength;c++){
@@ -555,7 +732,10 @@ class DCT{
         double get(int output,int input);
     }
 
-    //正变换DCT
+    /**
+     * 正变换DCT，将YUV矩阵转换为DCT频域矩阵
+     * @return DCT频域矩阵
+     */
     float[][] forwardDCT(){
         DCTMatrix=new float[blockLength][blockLength];
         /*
@@ -587,6 +767,11 @@ class DCT{
         return DCTMatrix;
     }
 
+    /**
+     * 正变换量化，将频域矩阵除以量化系数表，得到处理过的量化矩阵，这一步决定了JPEG图像的压缩质量
+     * @param channel_type 通道类型，分为luminance和chrominance
+     * @return 处理后的量化矩阵
+     */
     int[][] quantize(component channel_type){
         quantumMatrix=new int[blockLength][blockLength];
         for (int v=0;v<blockLength;v++){
@@ -601,7 +786,10 @@ class DCT{
         return quantumMatrix;
     }
 
-    //两个测试输出用的反变换函数
+    /**
+     * 反变换DCT，将DCT频域矩阵转换为YUV矩阵
+     * @return YUV矩阵
+     */
     float[][] reverseDCT(){
         matrix=new float[blockLength][blockLength];
         //double constant_1=(double)2/blockLength;
@@ -634,6 +822,11 @@ class DCT{
         return matrix;
     }
 
+    /**
+     * 反变换量化，将量化矩阵乘以量化系数表得到DCT频域矩阵，由于量化过程是有损的，反变换不能获取原数据
+     * @param channel_type 通道类型，分为luminance和chrominance
+     * @return DCT频域矩阵
+     */
     float[][] reverseQuantize(component channel_type){
         DCTMatrix=new float[blockLength][blockLength];
         for (int v=0;v<blockLength;v++){
@@ -650,14 +843,17 @@ class DCT{
 }
 
 
+/**
+ * 熵编码类
+ */
 class EntropyEncoder{
-    private BufferedOutputStream output;
-    private int[] lastDC={0,0,0};
-    private static final int blockLength=8;
-    private int[][] matrix;
-    private int[] zigzagArray;
-    private byte bufByte=0;
-    private int  bufIndex=7;
+    private BufferedOutputStream output;        //输出流
+    private int[] lastDC={0,0,0};               //DC差分编码缓存
+    private static final int blockLength=8;     //块大小
+    private int[][] matrix;                     //量化矩阵
+    private int[] zigzagArray;                  //zigzag数组
+    private byte bufByte=0;                     //当前正在写的byte
+    private int  bufIndex=7;                    //当前byte写指针
     public enum component{Y, Cb,Cr};
 
     //MCU处理后只有8x8的矩阵，不再需要对4x4特殊处理
@@ -670,6 +866,7 @@ class EntropyEncoder{
     private int[][] DCChrominanceMap;
     private int[][] ACLuminanceMap;
     private int[][] ACChrominanceMap;
+
     //霍夫曼表
     public static final int[] bitsDCluminance = {0x00, 0, 1, 5, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0};
     public static final int[] valDCluminance = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
@@ -699,7 +896,6 @@ class EntropyEncoder{
                     0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8,
                     0xf9, 0xfa};
     public static final int[] bitsACchrominance = {0x11, 0, 2, 1, 2, 4, 4, 3, 4, 7, 5, 4, 4, 0, 1, 2, 0x77};
-
     public static final int[] valACchrominance =
             {0x00, 0x01, 0x02, 0x03, 0x11, 0x04, 0x05, 0x21,
                     0x31, 0x06, 0x12, 0x41, 0x51, 0x07, 0x61, 0x71,
@@ -723,6 +919,10 @@ class EntropyEncoder{
                     0xea, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8,
                     0xf9, 0xfa};
 
+    /**
+     * 初始化熵编码类，传入JPEG IO类的输出流
+     * @param output 图像输出流，这里需要和JPEG IO类同步
+     */
     public EntropyEncoder(BufferedOutputStream output){
         this.output=output;
         matrix=new int[blockLength][blockLength];
@@ -730,11 +930,15 @@ class EntropyEncoder{
         initHuf();
     }
 
+    /**
+     * 初始化熵编码类，传入JPEG IO类的输出流
+     * @param output 图像输出流，这里需要和JPEG IO类同步
+     */
     public void setOutput(BufferedOutputStream output){
         this.output=output;
     }
 
-    //实在是懒得写范式Huffman构成了，直接搬源码了
+    //实在是懒得写范式Huffman构成了
     public void initHuf(){
         int[][] DC_matrix0 = new int[12][2];
         int[][] DC_matrix1 = new int[12][2];
@@ -777,11 +981,6 @@ class EntropyEncoder{
             DC_matrix1[valDCchrominance[p]][1] = huffsize[p];
         }
 
-        /*
-         * Init of the AC hufmann code for the chrominance
-         * matrix [][][0] is the code & matrix[][][1] is the number of bit needed
-         */
-
         p = 0;
         for (l = 1; l <= 16; l++) {
             for (i = 1; i <= bitsACchrominance[l]; i++) {
@@ -808,10 +1007,6 @@ class EntropyEncoder{
             AC_matrix1[valACchrominance[p]][1] = huffsize[p];
         }
 
-        /*
-         * init of the DC values for the luminance
-         * [][0] is the code   [][1] is the number of bit
-         */
         p = 0;
         for (l = 1; l <= 16; l++) {
             for (i = 1; i <= bitsDCluminance[l]; i++) {
@@ -837,11 +1032,6 @@ class EntropyEncoder{
             DC_matrix0[valDCluminance[p]][0] = huffcode[p];
             DC_matrix0[valDCluminance[p]][1] = huffsize[p];
         }
-
-        /*
-         * Init of the AC hufmann code for luminance
-         * matrix [][][0] is the code & matrix[][][1] is the number of bit
-         */
 
         p = 0;
         for (l = 1; l <= 16; l++) {
@@ -874,12 +1064,21 @@ class EntropyEncoder{
         ACChrominanceMap=AC_matrix1;
     }
 
+    /**
+     * 初始化矩阵，接受一个量化矩阵并将其进行zigzag扫描转换为64的一维矩阵
+     * @param matrix 量化矩阵
+     */
     void initMatrix(int[][] matrix){
         this.matrix=matrix;
         //zigzag扫描
         zigzagArray=zigzagScan(matrix);
     }
 
+    /**
+     * zigzag扫描，将8x8的二维数组转换为64的一维数组，并将左上角的数据集中在前方
+     * @param input 量化矩阵
+     * @return 处理后的64长度的zigzag数组
+     */
     public static int[] zigzagScan(int[][] input){
         int[] output=new int[blockLength*blockLength];
         for (int i=0;i<blockLength*blockLength;i++){
@@ -891,9 +1090,22 @@ class EntropyEncoder{
     interface significantWriter{
         void write(int input,int bits) throws IOException;
     }
+
+    /**
+     * 开始进行熵编码过程
+     * @param type 该矩阵的通道类型，分为luminance和chrominance
+     * @throws IOException IO异常
+     */
     void writeHuffmanBits(component type) throws IOException {
         writeHuffmanBits(type,false);
     }
+
+    /**
+     * 开始进行熵编码过程
+     * @param type 该矩阵的通道类型，分为luminance和chrominance
+     * @param debug 是否打印在终端中打印bit流，用于调试用途
+     * @throws IOException IO异常
+     */
     void writeHuffmanBits(component type,boolean debug) throws IOException {
         significantWriter writer=(input,bits)->{
             for (int i=bits-1;i>=0;i--){
@@ -981,9 +1193,21 @@ class EntropyEncoder{
         //flushByte();
     }
 
+    /**
+     * 写比特
+     * @param bit 0/1
+     * @throws IOException IO异常
+     */
     private void writeByte(int bit) throws IOException {
         writeByte(bit,false);
     }
+
+    /**
+     * 写比特，基于{@link #writeByte(byte, int, int)}实现
+     * @param bit 0/1
+     * @param debug 是否打印在终端中打印bit流，用于调试用途
+     * @throws IOException IO异常
+     */
     private void writeByte(int bit,boolean debug) throws IOException {
         if(debug){
             System.out.print(bit==0?0:1);
@@ -999,6 +1223,14 @@ class EntropyEncoder{
             flushByte(debug);
         }
     }
+
+    /**
+     * 在input的某一位上写比特，是其他写比特方法的基础实现
+     * @param input byte数据，通常传入该类的{@link #bufByte}
+     * @param bit 0/1
+     * @param index 0~7
+     * @return 写入完毕的byte结果
+     */
     private byte writeByte(byte input,int bit,int index) {
         if(bit==0){
             input= (byte) (input&((~1)<<index));
@@ -1007,9 +1239,20 @@ class EntropyEncoder{
         }
         return input;
     }
+
+    /**
+     * flush，强行将当前的bufByte以当前状态写入输出流中
+     * @throws IOException IO异常
+     */
     public void flushByte() throws IOException {
         flushByte(false);
     }
+
+    /**
+     * flush，强行将当前的bufByte以当前状态写入输出流中
+     * @param debug 是否打印在终端中打印bit流，用于调试用途
+     * @throws IOException IO异常
+     */
     public void flushByte(boolean debug) throws IOException {
         if(bufIndex<7){
             if(debug){
